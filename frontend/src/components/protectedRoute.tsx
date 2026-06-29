@@ -5,7 +5,7 @@ const ProtectedRoute = () => {
   const { isAuth, user, loading } = useAppData();
   const location = useLocation();
 
-  console.log("========== PROTECTED ROUTE =========="); //temp
+  console.log("========== PROTECTED ROUTE =========="); //temp for debugging
   console.log("loading:", loading);
   console.log("isAuth:", isAuth);
   console.log("user:", user);

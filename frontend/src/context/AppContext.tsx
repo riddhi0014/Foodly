@@ -25,7 +25,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [city, setCity] = useState("Fetching Location...");
 
-  async function fetchUser() {
+  const fetchUser = async () => {
     try {
       const token = localStorage.getItem("token");
 
@@ -44,14 +44,14 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       console.log(data);
       console.log("=====================================");
 
-      setUser(data);
+      setUser(data.user);
       setIsAuth(true);
     } catch (error) {
       console.log(error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     fetchUser();
@@ -59,7 +59,15 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   return (
     <AppContext.Provider
-      value={{ user, setUser, isAuth, setIsAuth, loading, setLoading }}
+      value={{
+        user,
+        setUser,
+        isAuth,
+        setIsAuth,
+        loading,
+        setLoading,
+        fetchUser,
+      }}
     >
       {children}
     </AppContext.Provider>

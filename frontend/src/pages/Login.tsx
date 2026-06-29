@@ -5,10 +5,12 @@ import { authService } from "../main";
 import { toast } from "react-hot-toast";
 import { useGoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
+import { useAppData } from "../context/AppContext";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { fetchUser } = useAppData();
 
   const responseGoogle = async (authResult: any) => {
     setLoading(true);
@@ -19,15 +21,13 @@ const Login = () => {
 
       localStorage.setItem("token", result.data.token);
 
-      console.log("Token saved");
+      await fetchUser();
 
       toast.success(result.data.message);
 
-      console.log("About to navigate");
+      setLoading(false);
 
       navigate("/");
-
-      console.log("Navigate finished");
     } catch (error) {
       console.log(error);
       toast.error("Problem while logging in");
