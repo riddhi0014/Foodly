@@ -18,9 +18,16 @@ const Login = () => {
       });
 
       localStorage.setItem("token", result.data.token);
+
+      console.log("Token saved");
+
       toast.success(result.data.message);
-      setLoading(false);
+
+      console.log("About to navigate");
+
       navigate("/");
+
+      console.log("Navigate finished");
     } catch (error) {
       console.log(error);
       toast.error("Problem while logging in");
