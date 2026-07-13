@@ -13,7 +13,7 @@ export const loginUser = TryCatch(async(req,res)=>{
 
 
   console.log("LOGIN HIT");
-    console.log(req.body);
+  console.log(req.body);
 
   const {code}=req.body;
 
@@ -33,13 +33,13 @@ export const loginUser = TryCatch(async(req,res)=>{
 
   console.log(userRes.data); //temporary
  
-  let user=await User.findOne({ email }); 
+  let user=await User.findOne({ email }); //trying to find if user is already in the database
 
   if(!user){
     user=await User.create({ email, name,image: picture});
-  } 
+  }  //this means user is new and we are registering him in our database for the first time.
 
-  const token=jwt.sign({user},process.env.JWT_SEC as string,{expiresIn:"15d"});
+  const token=jwt.sign({user},process.env.JWT_SEC as string,{expiresIn:"15d"}); //making a jwt token for the user to be used in future requests.
 
   res.status(200).json({ message: 'Login successful', token , user });
 })

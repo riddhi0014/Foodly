@@ -13,24 +13,41 @@ const Login = () => {
   const { fetchUser } = useAppData();
 
   const responseGoogle = async (authResult: any) => {
+    //temp setting up logs for debugging.
+    console.log("1. responseGoogle called");
+
     setLoading(true);
+
     try {
+      console.log("2. Sending login request");
+
       const result = await axios.post(`${authService}/api/auth/login`, {
         code: authResult["code"],
       });
 
+      console.log("3. Login successful");
+
       localStorage.setItem("token", result.data.token);
+
+      console.log("4. Token saved");
+
+      console.log("5. Calling fetchUser");
 
       await fetchUser();
 
+      console.log("6. fetchUser finished");
+
       toast.success(result.data.message);
 
-      setLoading(false);
+      console.log("7. Navigating");
 
       navigate("/");
+
+      console.log("8. navigate() called");
     } catch (error) {
-      console.log(error);
+      console.log("LOGIN ERROR:", error);
       toast.error("Problem while logging in");
+    } finally {
       setLoading(false);
     }
   };
@@ -40,6 +57,7 @@ const Login = () => {
     onError: responseGoogle,
     flow: "auth-code",
   });
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-white px-4">
       <div className="w-full max-w-sm space-y-6">

@@ -12,6 +12,7 @@ export interface LocationData {
   latitude: number;
   longitude: number;
   formattedAddress: string;
+
 } 
 
 export interface AppContextType {
@@ -24,5 +25,54 @@ export interface AppContextType {
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 
   fetchUser: () => Promise<void>;
+
+  location: LocationData | null;
+  loadingLocation: boolean;
+  city: string;
+  cart: ICart[] | null;
+  fetchCart: () => Promise<void>;
+  subTotal: number;
+  quantity: number;
+  
 }
 
+export interface IRestaurant {
+  _id: string;
+  name: string;
+  description?: string; 
+  image: string;
+  ownerId: string;
+  phoneNumber: number;
+  isVerified: boolean;
+  autoLocation:{
+    type: "Point";
+    coordinates: [number, number]; //Longitude, Latitude
+    formattedAddress: string;
+  }
+  isOpen: boolean;
+  createdAt: Date;
+}
+
+
+export interface IMenuItem {
+  _id: string;
+  restaurantId: string;
+  name: string;
+  description: string;
+  image?: string;
+  price: number;
+  isAvailable: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
+
+export interface ICart  {
+  userId: string;
+  restaurantId: string | IRestaurant;
+  itemId: string | IMenuItem;
+  quantity: number;
+  cretedAt: Date;
+  updatedAt: Date;
+}
