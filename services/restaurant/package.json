@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^2.0.1",
     "axios": "^1.18.1",
     "cors": "^2.8.6",
     "datauri": "^4.1.0",
