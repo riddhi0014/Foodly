@@ -7,10 +7,11 @@ import { AppProvider } from "./context/AppContext.tsx"; //learn
 
 export const authService = "http://localhost:5001";
 export const restaurantService = "http://localhost:5002";
+export const utilsService = "http://localhost:5003";
 
 //Frontend does not directly communicate with the utils service.Only other backend services communicate with the utils service. The frontend communicates with the utils service through the backend services.
 
-createRoot(document.getElementById("root")!).render(   
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <GoogleOAuthProvider clientId="44552044223-pr5cb4u0kcg9c0vhvv014ec9gie1rfcf.apps.googleusercontent.com">
       <AppProvider>
