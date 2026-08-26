@@ -10,6 +10,8 @@ export const restaurantService = "http://localhost:5002";
 export const utilsService = "http://localhost:5003";
 export const realtimeService = "http://localhost:5004";
 export const riderService = "http://localhost:5005";
+export const adminService = "http://localhost:5006";
+
 //Frontend does not directly communicate with the utils service.Only other backend services communicate with the utils service. The frontend communicates with the utils service through the backend services.
 
 createRoot(document.getElementById("root")!).render(
