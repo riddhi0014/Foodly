@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import AddRestaurant from "../components/AddRestaurant";
 import RestaurantProfile from "../components/RestaurantProfile";
+import RestaurantOrders from "../components/RestaurantOrders";
 import AddMenuItem from "../components/AddMenuItem";
 import MenuItems from "../components/MenuItems";
 

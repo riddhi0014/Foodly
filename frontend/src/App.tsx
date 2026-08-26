@@ -15,12 +15,27 @@ import Address from "./pages/Address";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
+import Orders from "./pages/Orders";
+import OrderPage from "./pages/OrderPage";
+import RiderDashboard from "./pages/RiderDashboard";
 
 const App = () => {
-  const { user } = useAppData();
+  const { user, loading } = useAppData();
+
+  if (loading) {
+    return (
+      <h1 className="text-2xl font-bold text-red-500 text-center mt-56">
+        Loading...
+      </h1>
+    );
+  }
 
   if (user && user.role === "seller") {
     return <Restaurant />;
+  }
+
+  if (user && user.role === "rider") {
+    return <RiderDashboard />;
   }
 
   return (
@@ -41,6 +56,8 @@ const App = () => {
             />
             {/* <Route path="/orders" element={<Orders />} />
             <Route path="/order/:id" element={<OrderPage />} /> */}
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/order/:id" element={<OrderPage />} />
             <Route path="/ordersuccess" element={<OrderSuccess />} />
             <Route path="/address" element={<Address />} />
             <Route path="/checkout" element={<Checkout />} />
