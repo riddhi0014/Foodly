@@ -52,18 +52,26 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       setIsAuth(true);
     } catch (error) {
       console.log(error);
+      localStorage.removeItem("token");
+      setUser(null);
+      setIsAuth(false);
     } finally {
       setLoading(false);
     }
   };
 
   const [cart, setCart] = useState<ICart[]>([]);
+  const [loadingCart, setLoadingCart] = useState(true);
   const [subTotal, setSubTotal] = useState(0);
   const [quantity, setQuantity] = useState(0);
 
   async function fetchCart() {
-    if (!user || user.role !== "customer") return;
+    if (!user || user.role !== "customer") {
+      setLoadingCart(false);
+      return;
+    }
     try {
+      setLoadingCart(true);
       const { data } = await axios.get(`${restaurantService}/api/cart/all`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -72,9 +80,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
       setCart(data.cart || []);
       setSubTotal(data.subtotal || 0);
-      setQuantity(data.cartLength);
+      setQuantity(data.cartLength || 0);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingCart(false);
     }
   }
 
@@ -86,6 +96,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   useEffect(() => {
     if (user && user.role === "customer") {
       fetchCart();
+    } else if (user && user.role !== "customer") {
+      setLoadingCart(false);
     }
   }, [user]);
 
@@ -109,10 +121,14 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           formattedAddress: data.display_name || "current location",
         });
 
+        const address = data?.address || {};
+
         setCity(
-          data.address.city ||
-            data.address.town ||
-            data.address.village ||
+          address.city ||
+            address.town ||
+            address.village ||
+            address.hamlet ||
+            address.suburb ||
             "Your Location"
         );
         setLoadingLocation(false);
@@ -142,6 +158,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         loadingLocation,
         city,
         cart,
+        loadingCart,
         fetchCart,
         subTotal,
         quantity,

@@ -20,7 +20,7 @@ const AddRestaurant = ({ fetchMyRestaurant }: Props) => {
 
   const handleSubmit = async () => {
     if (!name || !image || !location) {
-      alert("All field are required");
+      toast.error("Name, image, and location are required");
       return;
     }
 
@@ -33,6 +33,7 @@ const AddRestaurant = ({ fetchMyRestaurant }: Props) => {
     formData.append("formattedAddress", location.formattedAddress);
     formData.append("file", image);
     formData.append("phone", phone);
+    formData.append("phoneNumber", phone);
 
     try {
       setSubmitting(true);
@@ -45,7 +46,7 @@ const AddRestaurant = ({ fetchMyRestaurant }: Props) => {
       toast.success("Restaurant Added successfully");
       fetchMyRestaurant();
     } catch (error: any) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to add restaurant");
     } finally {
       setSubmitting(false);
     }

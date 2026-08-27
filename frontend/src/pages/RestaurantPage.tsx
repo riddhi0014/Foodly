@@ -43,7 +43,7 @@ const RestaurantPage = () => {
         }
       );
 
-      setMenuItems(data);
+      setMenuItems(data.items || (Array.isArray(data) ? data : []));
     } catch (error) {
       console.log(error);
     }

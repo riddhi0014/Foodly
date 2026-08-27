@@ -26,7 +26,7 @@ export const createOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
 
   const address = await Address.findOne({
     _id: addressId,
-    userId: user._id,
+    userId: user._id.toString(),
   });
 
   if (!address) {
@@ -56,23 +56,25 @@ export const createOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
     return +(R * c).toFixed(2);
   };
 
-  const cartItems = await Cart.find({ userId: user._id })
+  const rawCartItems = await Cart.find({
+    $or: [{ userId: user._id.toString() }, { userId: user._id }],
+  })
     .populate<{ itemId: IMenuItem }>("itemId")
     .populate<{ restaurantId: IRestaurant }>("restaurantId");
+
+  const cartItems = rawCartItems.filter(
+    (cart) => cart.itemId && cart.restaurantId
+  );
 
   if (cartItems.length === 0) {
     return res.status(400).json({ message: "Cart is empty" });
   }
 
   const firstCartItem = cartItems[0];
-
   if (!firstCartItem || !firstCartItem.restaurantId) {
-    return res.status(400).json({
-      message: "Invailid Cart Data",
-    });
+    return res.status(400).json({ message: "Cart is empty" });
   }
-
-  const restaurantId = firstCartItem.restaurantId._id;
+  const restaurantId = (firstCartItem.restaurantId as any)._id || firstCartItem.restaurantId;
 
   const restaurant = await Restaurant.findById(restaurantId);
 
@@ -83,8 +85,8 @@ export const createOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
   }
 
   if (!restaurant.isOpen) {
-    return res.status(404).json({
-      message: "Sorry this restaurant is closed for now",
+    return res.status(400).json({
+      message: "Sorry, this restaurant is closed right now. Click 'Open Restaurant' in the Seller Dashboard.",
     });
   }
 
@@ -448,7 +450,7 @@ export const getCurrentOrderForRider = TryCatch(async (req, res) => {
   }
 
   const order = await Order.findOne({
-    riderId,
+    riderId: String(riderId),
     status: { $ne: "delivered" },
   }).populate("restaurantId");
 

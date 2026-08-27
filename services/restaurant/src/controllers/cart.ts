@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { AuthenticatedRequest } from "../middlewares/isAuth.js";
 import TryCatch from "../middlewares/trycatch.js";
 import Cart from "../models/Cart.js";
+import Restaurant from "../models/Restaurant.js";
 
 export const addToCart = TryCatch(async (req: AuthenticatedRequest, res) => {
   if (!req.user) {
@@ -10,7 +11,7 @@ export const addToCart = TryCatch(async (req: AuthenticatedRequest, res) => {
     });
   }
 
-  const userId = req.user._id;
+  const userId = req.user._id.toString();
 
   const { restaurantId, itemId } = req.body;
 
@@ -24,15 +25,21 @@ export const addToCart = TryCatch(async (req: AuthenticatedRequest, res) => {
   }
 
   const cartFromDifferentRestaurant = await Cart.findOne({
-    userId,
+    $or: [{ userId }, { userId: req.user._id }],
     restaurantId: { $ne: restaurantId },
   });
 
   if (cartFromDifferentRestaurant) {
-    return res.status(400).json({
-      message:
-        "You can order from only one restaurant at a time. Please clear your cart first to add items from this restaurant.",
-    });
+    // Check if the old cart item's restaurant actually still exists
+    const oldRestaurant = await Restaurant.findById(cartFromDifferentRestaurant.restaurantId);
+    if (!oldRestaurant) {
+      await Cart.deleteMany({ $or: [{ userId }, { userId: req.user._id }] });
+    } else {
+      return res.status(400).json({
+        message:
+          "You can order from only one restaurant at a time. Please clear your cart first to add items from this restaurant.",
+      });
+    }
   }
 
   const cartItem = await Cart.findOneAndUpdate(
@@ -57,19 +64,25 @@ export const fetchMyCart = TryCatch(async (req: AuthenticatedRequest, res) => {
     });
   }
 
-  const userId = req.user._id;
+  const userId = req.user._id.toString();
 
-  const cartItems = await Cart.find({ userId })
+  const rawCartItems = await Cart.find({
+    $or: [{ userId }, { userId: req.user._id }],
+  })
     .populate("itemId")
     .populate("restaurantId");
+
+  const validCartItems = rawCartItems.filter(
+    (cartItem) => cartItem.itemId && cartItem.restaurantId
+  );
 
   let subtotal = 0;
   let cartLength = 0;
 
-  for (const cartItem of cartItems) {
+  for (const cartItem of validCartItems) {
     const item: any = cartItem.itemId;
 
-    subtotal += item.price * cartItem.quantity;
+    subtotal += (item.price || 0) * cartItem.quantity;
     cartLength += cartItem.quantity;
   }
 
@@ -77,7 +90,7 @@ export const fetchMyCart = TryCatch(async (req: AuthenticatedRequest, res) => {
     success: true,
     cartLength,
     subtotal,
-    cart: cartItems,
+    cart: validCartItems,
   });
 });
 

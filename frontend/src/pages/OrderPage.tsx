@@ -102,9 +102,9 @@ const OrderPage = () => {
         {order.items.map((item, i) => (
           <div className="flex justify-between text-sm" key={i}>
             <span>
-              {item.name} x {item.quauntity}
+              {item.name} x {item.quantity}
             </span>
-            <span>₹{item.price * item.quauntity}</span>
+            <span>₹{item.price * item.quantity}</span>
           </div>
         ))}
       </div>
@@ -121,7 +121,7 @@ const OrderPage = () => {
 
       <div className="rounded-xl bg-white p-4 shadow-sm space-y-2">
         <div className="flex justify-between text-sm">
-          <span>SubTotal</span> <span>₹{order.subtotal}</span>
+          <span>SubTotal</span> <span>₹{order.subTotal}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span>Delivery Fee</span> <span>₹{order.deliveryFee}</span>

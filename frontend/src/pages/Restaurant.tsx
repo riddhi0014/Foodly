@@ -1,5 +1,5 @@
 import { restaurantService } from "../main";
-import { IMenuItem, type IRestaurant } from "../types";
+import type { IMenuItem, IRestaurant } from "../types";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import AddRestaurant from "../components/AddRestaurant";
@@ -18,7 +18,7 @@ const Restaurant = () => {
   const fetchMyRestaurant = async () => {
     try {
       const { data } = await axios.get(
-        `${restaurantService}/api/restaurants/my`,
+        `${restaurantService}/api/restaurant/my`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -55,7 +55,7 @@ const Restaurant = () => {
         }
       );
 
-      setMenuItems(data);
+      setMenuItems(data.items || (Array.isArray(data) ? data : []));
     } catch (error) {
       console.log(error);
     }
@@ -118,7 +118,12 @@ const Restaurant = () => {
             />
           )}
           {tab === "add-item" && (
-            <AddMenuItem onItemAdded={() => fetchMenuItems(restaurant._id)} />
+            <AddMenuItem
+              onItemAdded={() => {
+                fetchMenuItems(restaurant._id);
+                setTab("menu");
+              }}
+            />
           )}
           {tab === "sales" && <p>Sales Page</p>}
         </div>

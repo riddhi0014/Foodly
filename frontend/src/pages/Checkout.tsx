@@ -15,7 +15,7 @@ interface Address {
 }
 
 const Checkout = () => {
-  const { cart, subTotal, quantity } = useAppData();
+  const { cart, subTotal, quantity, loadingCart } = useAppData();
 
   const [addresses, setAddresses] = useState<Address[]>([]);
 
@@ -59,9 +59,17 @@ const Checkout = () => {
 
   const navigate = useNavigate();
 
+  if (loadingCart) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-gray-500 text-lg">Loading checkout...</p>
+      </div>
+    );
+  }
+
   if (!cart || cart.length === 0) {
     return (
-      <div className="flex min-h-[60vh] item-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <p className="text-gray-500 text-lg">Your cart is empty</p>
       </div>
     );
@@ -94,19 +102,43 @@ const Checkout = () => {
       );
 
       return data;
-    } catch (error) {
-      toast.error("Failed to create Order");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to create Order");
     } finally {
       setCreatingOrder(false);
     }
   };
 
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const { fetchCart } = useAppData();
+
   const payWithRazorpay = async () => {
     try {
       setLoadingRazorpay(true);
 
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        toast.error("Razorpay SDK failed to load");
+        return;
+      }
+
       const order = await createOrder("razorpay");
       if (!order) return;
+
+      fetchCart();
 
       const { orderId, amount } = order;
 
@@ -120,7 +152,7 @@ const Checkout = () => {
         key,
         amount: amount * 100,
         currency: "INR",
-        name: "Tomato", //your business name
+        name: "Foodly", //your business name
         description: "Food Order Payment",
         order_id: razorpayOrderId,
 
@@ -133,7 +165,7 @@ const Checkout = () => {
               orderId,
             });
 
-            toast.success("Payment successfull 🎉");
+            toast.success("Payment successful 🎉");
             navigate("/paymentsuccess/" + response.razorpay_payment_id);
           } catch (error) {
             toast.error("Payment verification failed");

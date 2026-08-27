@@ -19,6 +19,7 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const audioUnlockedRef = useRef(false);
 
   const { socket } = useSocket();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -36,7 +37,8 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
           audioRef.current!.pause();
           audioRef.current!.currentTime = 0;
           setAudioUnlocked(true);
-          console.log("Audio unlocked");
+          audioUnlockedRef.current = true;
+          console.log("Audio unlocked successfully");
         })
         .catch((err) => {
           console.log("Failed to unlock audio: ", err);
@@ -68,12 +70,20 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
   }, [restaurantId]);
 
   useEffect(() => {
+    if (!socket || !restaurantId) return;
+
+    // Join the restaurant room so real-time order events are received
+    socket.emit("join:restaurant", restaurantId);
+    console.log("Joined restaurant socket room:", restaurantId);
+  }, [socket, restaurantId]);
+
+  useEffect(() => {
     if (!socket) return;
 
     const onNewOrder = () => {
-      console.log("New Order recived socket");
+      console.log("🔔 New Order received via socket");
 
-      if (audioUnlocked && audioRef.current) {
+      if (audioUnlockedRef.current && audioRef.current) {
         audioRef.current.currentTime = 0;
         audioRef.current.play().catch((err) => {
           console.error("Audio play failed:", err);
@@ -88,7 +98,7 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
     return () => {
       socket.off("order:new", onNewOrder);
     };
-  }, [socket, audioUnlocked]);
+  }, [socket]);
 
   useEffect(() => {
     if (!socket) return;

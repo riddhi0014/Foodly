@@ -5,7 +5,8 @@ import { BiCheckCircle } from "react-icons/bi";
 import { BsArrowRight } from "react-icons/bs";
 
 const PaymentSuccess = () => {
-  const { paymentId } = useParams<{ paymentId: string }>();
+  const params = useParams<{ paymentID?: string; paymentId?: string }>();
+  const paymentId = params.paymentID || params.paymentId;
   const navigate = useNavigate();
 
   const { fetchCart } = useAppData();
@@ -14,10 +15,7 @@ const PaymentSuccess = () => {
     fetchCart();
   }, []);
   return (
-    <div
-      className="flex min-h-[70vh] items-center justify-center
-   px-4"
-    >
+    <div className="flex min-h-[70vh] items-center justify-center px-4">
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-sm text-center space-y-4">
         <BiCheckCircle size={64} className="mx-auto text-green-500" />
 
@@ -28,21 +26,21 @@ const PaymentSuccess = () => {
         </p>
 
         {paymentId && (
-          <div className="rounded-lg bg-gray-50">
-            <span className="text-gray-500">PaymentID: </span>
-            <p className="font-mono break-all text-gray-500">{paymentId}</p>
+          <div className="rounded-lg bg-gray-50 p-3">
+            <span className="text-gray-500 text-xs">Payment ID: </span>
+            <p className="font-mono break-all text-xs text-gray-700 mt-1">{paymentId}</p>
           </div>
         )}
 
         <div className="space-y-2 pt-2">
           <button
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#e23744] py-3 text-sm font-semibold text-white"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#e23744] py-3 text-sm font-semibold text-white hover:bg-[#d32f3a]"
             onClick={() => navigate("/")}
           >
             Order More <BsArrowRight size={16} />
           </button>
           <button
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#e23744] py-3 text-sm font-semibold text-white"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#e23744] py-3 text-sm font-semibold text-white hover:bg-[#d32f3a]"
             onClick={() => navigate("/orders")}
           >
             Your orders <BsArrowRight size={16} />

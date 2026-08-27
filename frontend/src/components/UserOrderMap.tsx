@@ -1,6 +1,9 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
+if (typeof window !== "undefined") {
+  (window as any).L = L;
+}
 import "leaflet-routing-machine";
 import { useEffect } from "react";
 

@@ -1,4 +1,4 @@
-import getBuffer from "../config/dataUri.js";
+import getBuffer from "../config/datauri.js";
 import { AuthenticatedRequest } from "../middlewares/isAuth.js";
 import TryCatch from "../middlewares/trycatch.js";
 import Restaurant from "../models/Restaurant.js";
@@ -23,39 +23,57 @@ export const addRestaurant=TryCatch(async(req:AuthenticatedRequest,res)=>{
     return res.status(400).json({message:"You already have a restaurant"});
   }
 
-  const {name, description,latitude, longitude, formattedAddress,phoneNumber}=req.body;
+  const {
+    name,
+    description,
+    latitude,
+    longitude,
+    formattedAddress,
+    phoneNumber,
+    phone,
+  } = req.body;
 
-  if(!name  || !latitude || !longitude )
-  {
-    return res.status(400).json({message:"All fields are required"});
+  const contactNumber = phoneNumber || phone;
+
+  if (!name || !latitude || !longitude || !contactNumber) {
+    return res
+      .status(400)
+      .json({ message: "Name, location, and contact number are required" });
   }
 
-  const file=req.file;  //comes from multer middleware
+  const file = req.file; //comes from multer middleware
 
-  if(!file)
-  {
-    return res.status(400).json({message:"Image is required"});
+  if (!file) {
+    return res.status(400).json({ message: "Image is required" });
   }
 
-  const fileBuffer=getBuffer(file); // form data after conversion using dataUri
+  const fileBuffer = getBuffer(file); // form data after conversion using dataUri
 
-  if(!fileBuffer?.content)
-  {
-    return res.status(500).json({message:"Error processing image"}); 
+  if (!fileBuffer?.content) {
+    return res.status(500).json({ message: "Error processing image" });
   }
 
-  const { data: uploadResult } = await axios.post(
-    `${process.env.UTILS_SERVICE}/api/upload`,
-    {
-      buffer: fileBuffer.content,
-    }
-  );
+  let uploadResultUrl = "";
+  try {
+    const { data: uploadResult } = await axios.post(
+      `${process.env.UTILS_SERVICE}/api/upload`,
+      {
+        buffer: fileBuffer.content,
+      }
+    );
+    uploadResultUrl = uploadResult.url;
+  } catch (uploadError: any) {
+    console.error("Upload error to utils service:", uploadError?.response?.data || uploadError.message);
+    return res.status(500).json({
+      message: uploadError?.response?.data?.message || "Failed to upload restaurant image to utils service",
+    });
+  }
 
   const restaurant = await Restaurant.create({
     name,
     description,
-    phoneNumber,
-    image: uploadResult.url,
+    phoneNumber: String(contactNumber),
+    image: uploadResultUrl,
     ownerId: user._id,
     autoLocation: {
       type: "Point",
@@ -63,6 +81,7 @@ export const addRestaurant=TryCatch(async(req:AuthenticatedRequest,res)=>{
       formattedAddress,
     },
     isVerified: false,
+    isOpen: true,
   });
 
   return res.status(201).json({

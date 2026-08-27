@@ -30,10 +30,10 @@ export interface AppContextType {
   loadingLocation: boolean;
   city: string;
   cart: ICart[] | null;
+  loadingCart: boolean;
   fetchCart: () => Promise<void>;
   subTotal: number;
   quantity: number;
-  
 }
 
 export interface IRestaurant {

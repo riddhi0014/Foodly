@@ -31,52 +31,43 @@ const App = () => {
     );
   }
 
-  if (user && user.role === "seller") {
-    return <Restaurant />;
-  }
-
-  if (user && user.role === "rider") {
-    return <RiderDashboard />;
-  }
-
-  if (user && user.role === "admin") {
-    return <Admin />;
-  }
-
   return (
-    <>
-      <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route element={<PublicRoute />}>
-            {/* PublicRoute component will handle the logic for public routes.This is a wrapper route. */}
-            <Route path="/login" element={<Login />} />
-          </Route>
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Home />} />
-
-            <Route
-              path="/paymentsuccess/:paymentID "
-              element={<PaymentSuccess />}
-            />
-            {/* <Route path="/orders" element={<Orders />} />
-            <Route path="/order/:id" element={<OrderPage />} /> */}
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/order/:id" element={<OrderPage />} />
-            <Route path="/ordersuccess" element={<OrderSuccess />} />
-            <Route path="/address" element={<Address />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/restaurant/:id" element={<RestaurantPage />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/select-role" element={<SelectRole />} />
-            <Route path="/account" element={<Account />} />
-          </Route>
-        </Routes>
-        <Toaster />
-        {/*Exists outside Routes so that it can be used in any page.Every page can display notifications using this toaster.
-         */}
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      {user?.role === "seller" ? (
+        <Restaurant />
+      ) : user?.role === "rider" ? (
+        <RiderDashboard />
+      ) : user?.role === "admin" ? (
+        <Admin />
+      ) : (
+        <>
+          <Navbar />
+          <Routes>
+            <Route element={<PublicRoute />}>
+              {/* PublicRoute component will handle the logic for public routes.This is a wrapper route. */}
+              <Route path="/login" element={<Login />} />
+            </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Home />} />
+              <Route
+                path="/paymentsuccess/:paymentID"
+                element={<PaymentSuccess />}
+              />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/order/:id" element={<OrderPage />} />
+              <Route path="/ordersuccess" element={<OrderSuccess />} />
+              <Route path="/address" element={<Address />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/restaurant/:id" element={<RestaurantPage />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/select-role" element={<SelectRole />} />
+              <Route path="/account" element={<Account />} />
+            </Route>
+          </Routes>
+        </>
+      )}
+      <Toaster />
+    </BrowserRouter>
   );
 };
 

@@ -1,7 +1,7 @@
 import { AuthenticatedRequest } from "../middlewares/isAuth.js";
 import TryCatch from "../middlewares/trycatch.js";
 import Restaurant from "../models/Restaurant.js";
-import getBuffer from "../config/dataUri.js";
+import getBuffer from "../config/datauri.js";
 import axios from "axios";
 import MenuItems from "../models/MenuItems.js";
  
@@ -58,27 +58,17 @@ if(!fileBuffer?.content)
  })
 
 
- export const getAllItems=TryCatch(async(req:AuthenticatedRequest, res)=>{
-  
-    if(!req.user){
-      return res.status(401).json({message:"Unauthorized request.Please login"})
-    }
-  
-    const {restaurantId}=req.params;
+export const getAllItems = TryCatch(
+  async (req: AuthenticatedRequest, res) => {
+    const { restaurantId } = req.params;
 
-    if(!restaurantId){
-      return res.status(400).json({message:"Restaurant id is required"})
+    if (!restaurantId) {
+      return res.status(400).json({ message: "Restaurant id is required" });
     }
 
-    const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
-  
-    if(!restaurant){
-      return res.status(404).json({message:"Restaurant not found"})
-    }
-  
-    const items = await MenuItems.find({ restaurantId: restaurant._id });
-  
-    return res.status(200).json({items});
+    const items = await MenuItems.find({ restaurantId });
+
+    return res.status(200).json({ items });
   }
 );
 
