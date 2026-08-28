@@ -44,9 +44,9 @@ const Login = () => {
       navigate("/");
 
       console.log("8. navigate() called");
-    } catch (error) {
-      console.log("LOGIN ERROR:", error);
-      toast.error("Problem while logging in");
+    } catch (error: any) {
+      console.log("LOGIN ERROR:", error?.response?.data || error);
+      toast.error(error?.response?.data?.message || error.message || "Problem while logging in");
     } finally {
       setLoading(false);
     }

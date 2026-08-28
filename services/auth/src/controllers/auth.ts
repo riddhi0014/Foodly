@@ -10,10 +10,7 @@ import axios from 'axios';
 
 
 export const loginUser = TryCatch(async(req,res)=>{
-
-
-  console.log("LOGIN HIT");
-  console.log(req.body);
+  console.log("👉 LOGIN HIT. Body:", req.body);
 
   const {code}=req.body;
 
@@ -21,25 +18,35 @@ export const loginUser = TryCatch(async(req,res)=>{
     return res.status(400).json({message:"Authorization code is required."});
   }
 
-  const googleRes=await oauth2Client.getToken(code);
+  console.log("1. Exchanging code with Google OAuth...");
+  let googleRes;
+  try {
+    googleRes = await oauth2Client.getToken(code);
+  } catch (err: any) {
+    console.error("❌ Google getToken error:", err?.response?.data || err.message || err);
+    return res.status(500).json({ message: `Google Auth Error: ${err?.response?.data?.error_description || err.message}` });
+  }
+
   oauth2Client.setCredentials(googleRes.tokens); 
 
+  console.log("2. Fetching user info from Google...");
   const userRes = await axios.get(
     `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`
   );
 
-  
   const { email, name ,picture } = userRes.data;
 
-  console.log(userRes.data); //temporary
- 
-  let user=await User.findOne({ email }); //trying to find if user is already in the database
+  console.log("3. User info received:", email);
+
+  console.log("4. Finding or creating user in MongoDB...");
+  let user=await User.findOne({ email });
 
   if(!user){
     user=await User.create({ email, name,image: picture});
-  }  //this means user is new and we are registering him in our database for the first time.
+  }
 
-  const token=jwt.sign({user},process.env.JWT_SEC as string,{expiresIn:"15d"}); //making a jwt token for the user to be used in future requests.
+  console.log("5. Generating JWT token...");
+  const token=jwt.sign({user},process.env.JWT_SEC as string,{expiresIn:"15d"});
 
   res.status(200).json({ message: 'Login successful', token , user });
 })

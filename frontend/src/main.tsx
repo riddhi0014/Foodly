@@ -5,12 +5,12 @@ import App from "./App.tsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AppProvider } from "./context/AppContext.tsx"; //learn
 import { SocketProvider } from "./context/SocketContext.tsx";
-export const authService = "http://localhost:5001";
-export const restaurantService = "http://localhost:5002";
-export const utilsService = "http://localhost:5003";
-export const realtimeService = "http://localhost:5004";
-export const riderService = "http://localhost:5005";
-export const adminService = "http://localhost:5006";
+export const authService = "https://foodly-auth.onrender.com";
+export const restaurantService = "https://foodly-restaurant.onrender.com";
+export const utilsService = "https://foodly-utils.onrender.com";
+export const realtimeService = "https://foodly-realtime.onrender.com";
+export const riderService = "https://foodly-rider.onrender.com";
+export const adminService = "https://foodly-admin-xam9.onrender.com";
 
 //Frontend does not directly communicate with the utils service.Only other backend services communicate with the utils service. The frontend communicates with the utils service through the backend services.
 
