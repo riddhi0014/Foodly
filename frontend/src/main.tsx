@@ -5,12 +5,12 @@ import App from "./App.tsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AppProvider } from "./context/AppContext.tsx"; //learn
 import { SocketProvider } from "./context/SocketContext.tsx";
-export const authService = "https://foodly-auth.onrender.com";
-export const restaurantService = "https://foodly-restaurant.onrender.com";
-export const utilsService = "https://foodly-utils.onrender.com";
-export const realtimeService = "https://foodly-realtime.onrender.com";
-export const riderService = "https://foodly-rider.onrender.com";
-export const adminService = "https://foodly-admin-xam9.onrender.com";
+export const authService = import.meta.env.VITE_AUTH_SERVICE || "https://foodly-auth.onrender.com";
+export const restaurantService = import.meta.env.VITE_RESTAURANT_SERVICE || "https://foodly-restaurant.onrender.com";
+export const utilsService = import.meta.env.VITE_UTILS_SERVICE || "https://foodly-utils.onrender.com";
+export const realtimeService = import.meta.env.VITE_REALTIME_SERVICE || "https://foodly-realtime.onrender.com";
+export const riderService = import.meta.env.VITE_RIDER_SERVICE || "https://foodly-rider.onrender.com";
+export const adminService = import.meta.env.VITE_ADMIN_SERVICE || "https://foodly-admin-xam9.onrender.com";
 
 //Frontend does not directly communicate with the utils service.Only other backend services communicate with the utils service. The frontend communicates with the utils service through the backend services.
 
