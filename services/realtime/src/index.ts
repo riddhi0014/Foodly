@@ -12,6 +12,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Normalize duplicate slashes in incoming request URLs (e.g. //api/v1/internal/emit)
+app.use((req, _res, next) => {
+  if (req.url && req.url.includes("//")) {
+    req.url = req.url.replace(/\/{2,}/g, "/");
+  }
+  next();
+});
+
+app.get("/", (_req, res) => {
+  res.json({
+    status: "healthy",
+    service: "realtime",
+    version: "1.1.0",
+  });
+});
+
 app.use("/api/v1/internal", internalRoute);
 
 const server = http.createServer(app); 

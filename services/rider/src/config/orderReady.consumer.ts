@@ -46,12 +46,20 @@ export const startOrderReadyConsumer = async () => {
         return;
       }
 
+      const rawUrl =
+        process.env.REALTIME_SERVICE || "https://foodly-realtime.onrender.com";
+      const realtimeUrl = rawUrl.replace(/\/+$/, "");
+      const internalKey = (
+        process.env.INTERNAL_SERVICE_KEY ||
+        "jdfienf12345@@@@##4$$$%%%jsadfjlajdf"
+      ).trim();
+
       for (const rider of riders) {
         console.log(`Notifying rider userId: ${rider.userId}`);
 
         try {
           await axios.post(
-            `${process.env.REALTIME_SERVICE}/api/v1/internal/emit`,
+            `${realtimeUrl}/api/v1/internal/emit`,
             {
               event: "order:available",
               room: `user:${rider.userId}`,
@@ -59,8 +67,9 @@ export const startOrderReadyConsumer = async () => {
             },
             {
               headers: {
-                "x-internal-key": process.env.INTERNAL_SERVICE_KEY,
+                "x-internal-key": internalKey,
               },
+              timeout: 5000,
             }
           );
           console.log(`Notified rider ${rider.userId} successfully`);
