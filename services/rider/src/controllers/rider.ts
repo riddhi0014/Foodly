@@ -196,12 +196,15 @@ export const acceptOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
         orderId,
         riderId: rider._id.toString(),
         riderUserId: rider.userId,
-        riderName: rider.picture,
+        riderName: req.user?.name || "Delivery Partner",
+        riderImage: rider.picture,
         riderPhone: rider.phoneNumber,
       },
       {
         headers: {
-          "x-internal-key": process.env.INTERNAL_SERVICE_KEY,
+          "x-internal-key":
+            process.env.INTERNAL_SERVICE_KEY ||
+            "jdfienf12345@@@@##4$$$%%%jsadfjlajdf",
         },
       }
     );

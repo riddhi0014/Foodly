@@ -394,6 +394,11 @@ export const assignRiderToOrder = TryCatch(async (req, res) => {
 
   const { orderId, riderId, riderName, riderPhone } = req.body;
 
+  const cleanRiderName =
+    riderName && !riderName.startsWith("data:") && riderName.length < 60
+      ? riderName
+      : "Delivery Partner";
+
   const orderAvailable = await Order.findOne({
     riderId,
     status: { $ne: "delivered" },
@@ -417,7 +422,7 @@ export const assignRiderToOrder = TryCatch(async (req, res) => {
     { _id: orderId, riderId: null },
     {
       riderId,
-      riderName,
+      riderName: cleanRiderName,
       riderPhone,
       status: "rider_assigned",
     },

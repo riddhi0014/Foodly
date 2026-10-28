@@ -106,6 +106,24 @@ const OrderPage = () => {
     order.deliveryAddress?.latitude != null &&
     order.deliveryAddress?.longitude != null;
 
+  const isDataUri = (val?: string | null) =>
+    Boolean(
+      val &&
+        (val.startsWith("data:") ||
+          val.startsWith("http://") ||
+          val.startsWith("https://") ||
+          val.length > 60)
+    );
+
+  const displayRiderName =
+    order.riderName && !isDataUri(order.riderName)
+      ? order.riderName
+      : "Delivery Partner";
+
+  const riderPicture =
+    (order as any).riderImage ||
+    (order.riderName && isDataUri(order.riderName) ? order.riderName : null);
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
       <h1 className="text-xl font-bold">Order #{order._id.slice(-6)}</h1>
@@ -127,14 +145,20 @@ const OrderPage = () => {
         <div className="space-y-4">
           <div className="rounded-xl bg-white p-4 shadow-sm border border-blue-100 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-xl">
-                🛵
+              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-xl overflow-hidden shrink-0 border border-blue-200">
+                {riderPicture ? (
+                  <img
+                    src={riderPicture}
+                    alt={displayRiderName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  "🛵"
+                )}
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800">
-                  {order.riderName && !order.riderName.startsWith("http")
-                    ? order.riderName
-                    : "Delivery Partner Assigned"}
+                  {displayRiderName}
                 </h3>
                 <p className="text-xs text-green-600 font-medium">
                   {order.status === "picked_up"
