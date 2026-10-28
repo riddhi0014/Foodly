@@ -193,8 +193,6 @@ export const createOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
     expiresAt,
   });
 
-  await Cart.deleteMany({ userId: user._id });
-
   res.json({
     message: "Order created successfully",
     orderId: order._id.toString(),
@@ -203,7 +201,7 @@ export const createOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
 });
 
 export const fetchOrderForPayment = TryCatch(async (req, res) => {
-  if (req.headers["x-internal-key"] !== process.env.INTERNAL_SERVICE_KEY) {
+  if (!isInternalAuthorized(req)) {
     return res.status(403).json({
       message: "Forbidden",
     });

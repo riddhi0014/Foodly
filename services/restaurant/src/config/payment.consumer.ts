@@ -1,5 +1,6 @@
 import axios from "axios";
 import Order from "../models/Order.js";
+import Cart from "../models/Cart.js";
 import { getChannel } from "./rabbitmq.js";
 
 export const startPaymentConsumer = async () => {
@@ -41,6 +42,11 @@ export const startPaymentConsumer = async () => {
       }
 
       console.log("✅Order Placed:", order._id);
+
+      // Clear the user's cart only upon confirmed payment success
+      await Cart.deleteMany({
+        $or: [{ userId: order.userId.toString() }, { userId: order.userId }],
+      });
 
       //   socket work
       const rawUrl =

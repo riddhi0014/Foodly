@@ -138,8 +138,6 @@ const Checkout = () => {
       const order = await createOrder("razorpay");
       if (!order) return;
 
-      fetchCart();
-
       const { orderId, amount } = order;
 
       const { data } = await axios.post(`${utilsService}/api/payment/create`, {
@@ -165,6 +163,7 @@ const Checkout = () => {
               orderId,
             });
 
+            fetchCart();
             toast.success("Payment successful 🎉");
             navigate("/paymentsuccess/" + response.razorpay_payment_id);
           } catch (error) {

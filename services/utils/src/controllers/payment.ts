@@ -5,27 +5,43 @@ import { verifyRazorpaySignature } from "../config/verifyRazorpay.js";
 import { publishPaymentSuccess } from "../config/payment.producer.js";
 
 export const createRazorpayOrder = async (req: Request, res: Response) => {
-  const { orderId } = req.body;
+  try {
+    const { orderId } = req.body;
 
-  const { data } = await axios.get(
-    `${process.env.RESTAURANT_SERVICE}/api/order/payment/${orderId}`,
-    {
-      headers: {
-        "x-internal-key": process.env.INTERNAL_SERVICE_KEY,
-      },
-    }
-  );
+    const rawUrl =
+      process.env.RESTAURANT_SERVICE || "https://foodly-restaurant.onrender.com";
+    const restaurantUrl = rawUrl.replace(/\/+$/, "");
+    const internalKey = (
+      process.env.INTERNAL_SERVICE_KEY ||
+      "jdfienf12345@@@@##4$$$%%%jsadfjlajdf"
+    ).trim();
 
-  const razorpayOrder = await razorpay.orders.create({
-    amount: data.amount * 100,
-    currency: "INR",
-    receipt: orderId,
-  });
+    const { data } = await axios.get(
+      `${restaurantUrl}/api/order/payment/${orderId}`,
+      {
+        headers: {
+          "x-internal-key": internalKey,
+        },
+        timeout: 5000,
+      }
+    );
 
-  res.json({
-    razorpayOrderId: razorpayOrder.id,
-    key: process.env.RAZORPAY_KEY_ID, 
-  });
+    const razorpayOrder = await razorpay.orders.create({
+      amount: data.amount * 100,
+      currency: "INR",
+      receipt: orderId,
+    });
+
+    res.json({
+      razorpayOrderId: razorpayOrder.id,
+      key: process.env.RAZORPAY_KEY_ID, 
+    });
+  } catch (error: any) {
+    console.error("Razorpay order creation error:", error?.response?.data || error?.message);
+    res.status(error?.response?.status || 500).json({
+      message: error?.response?.data?.message || "Payment initiation failed",
+    });
+  }
 };
 
 export const verifyRazorpayPayment = async (req: Request, res: Response) => {
@@ -72,12 +88,21 @@ export const payWithStripe = async (req: Request, res: Response) => {
   try {
     const { orderId } = req.body;
 
+    const rawUrl =
+      process.env.RESTAURANT_SERVICE || "https://foodly-restaurant.onrender.com";
+    const restaurantUrl = rawUrl.replace(/\/+$/, "");
+    const internalKey = (
+      process.env.INTERNAL_SERVICE_KEY ||
+      "jdfienf12345@@@@##4$$$%%%jsadfjlajdf"
+    ).trim();
+
     const { data } = await axios.get(
-      `${process.env.RESTAURANT_SERVICE}/api/order/payment/${orderId}`,
+      `${restaurantUrl}/api/order/payment/${orderId}`,
       {
         headers: {
-          "x-internal-key": process.env.INTERNAL_SERVICE_KEY,
+          "x-internal-key": internalKey,
         },
+        timeout: 5000,
       }
     );
 
