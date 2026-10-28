@@ -105,7 +105,8 @@ export interface IOrder {
   addressId: string;
 
   deliveryAddress: {
-    fromattedAddress: string;
+    fromattedAddress?: string;
+    formattedAddress?: string;
     mobile: number;
     latitude: number;
     longitude: number;

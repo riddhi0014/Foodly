@@ -24,37 +24,39 @@ const RiderCurrentOrder = ({ order, onStatusUpdate }: Props) => {
       toast.success("Order status updated");
       onStatusUpdate();
     } catch (error: any) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to update order status");
     }
   };
+
   return (
     <div className="rounded-xl bg-white shadow-sm p-4 space-y-4">
       <h1 className="font-semibold text-gray-800">Current Order</h1>
 
       <div className="text-sm text-gray-600 space-y-1">
         <p>
-          <b>Pickup:</b>
-          {order.restaurantName}
+          <b>Pickup:</b> {order?.restaurantName || "Restaurant"}
         </p>
         <p>
-          <b>Drop:</b>
-          {order.deliveryAddress.fromattedAddress}
+          <b>Drop:</b>{" "}
+          {order?.deliveryAddress?.fromattedAddress ||
+            order?.deliveryAddress?.formattedAddress ||
+            "Delivery Address"}
         </p>
         <p>
-          <b>Total:</b>₹{order.totalAmount}
+          <b>Total:</b>₹{order?.totalAmount ?? 0}
         </p>
         <p>
-          <b>Your Earning:</b>₹{order.riderAmount}
+          <b>Your Earning:</b>₹{order?.riderAmount ?? 0}
         </p>
         <p>
-          <b>Status:</b>
+          <b>Status:</b>{" "}
           <span className="capitalize text-blue-600">
-            {order.status.replace("_", " ")}
+            {order?.status ? order.status.replace("_", " ") : "Processing"}
           </span>
         </p>
       </div>
 
-      {order.deliveryAddress.mobile && (
+      {order?.deliveryAddress?.mobile && (
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div className="text-sm">
             <p className="text-gray-500">Customer Phone</p>
@@ -72,7 +74,7 @@ const RiderCurrentOrder = ({ order, onStatusUpdate }: Props) => {
       )}
 
       <div className="space-y-2">
-        {order.status === "rider_assigned" && (
+        {order?.status === "rider_assigned" && (
           <button
             onClick={() => updateStatus()}
             className="w-full bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg py-2 font-semibold"
@@ -81,7 +83,7 @@ const RiderCurrentOrder = ({ order, onStatusUpdate }: Props) => {
           </button>
         )}
 
-        {order.status === "picked_up" && (
+        {order?.status === "picked_up" && (
           <button
             onClick={() => updateStatus()}
             className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-2 font-semibold"

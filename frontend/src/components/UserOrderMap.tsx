@@ -1,9 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import * as L from "leaflet";
+import L from "../utils/leaflet-setup";
 import "leaflet/dist/leaflet.css";
-if (typeof window !== "undefined") {
-  (window as any).L = L;
-}
 import "leaflet-routing-machine";
 import { useEffect } from "react";
 
@@ -36,22 +33,43 @@ const Routing = ({
   const map = useMap();
 
   useEffect(() => {
-    const control = L.Routing.control({
-      waypoints: [L.latLng(from), L.latLng(to)],
-      lineOptions: {
-        styles: [{ color: "#E23744", weight: 5 }],
-      },
-      addWaypoints: false,
-      draggableWaypoints: false,
-      show: false,
-      createMarker: () => null,
-      router: L.Routing.osrmv1({
-        serviceUrl: "https://router.project-osrm.org/route/v1",
-      }),
-    }).addTo(map);
+    const RoutingMachine =
+      (L as any).Routing ||
+      (typeof window !== "undefined" && (window as any).L?.Routing) ||
+      (typeof globalThis !== "undefined" && (globalThis as any).L?.Routing);
+
+    if (!RoutingMachine || !RoutingMachine.control) {
+      console.warn("Leaflet Routing Machine is not ready yet.");
+      return;
+    }
+
+    let control: any;
+    try {
+      control = RoutingMachine.control({
+        waypoints: [L.latLng(from), L.latLng(to)],
+        lineOptions: {
+          styles: [{ color: "#E23744", weight: 5 }],
+        },
+        addWaypoints: false,
+        draggableWaypoints: false,
+        show: false,
+        createMarker: () => null,
+        router: RoutingMachine.osrmv1({
+          serviceUrl: "https://router.project-osrm.org/route/v1",
+        }),
+      }).addTo(map);
+    } catch (err) {
+      console.error("Failed to add routing control in UserOrderMap:", err);
+    }
 
     return () => {
-      map.removeControl(control);
+      if (control) {
+        try {
+          map.removeControl(control);
+        } catch {
+          // ignore cleanup errors
+        }
+      }
     };
   }, [from, to, map]);
 
@@ -64,6 +82,17 @@ interface props {
 }
 
 const UserOrderMap = ({ riderLocation, deliveryLocation }: props) => {
+  if (
+    !riderLocation ||
+    riderLocation[0] == null ||
+    riderLocation[1] == null ||
+    !deliveryLocation ||
+    deliveryLocation[0] == null ||
+    deliveryLocation[1] == null
+  ) {
+    return null;
+  }
+
   return (
     <div className="rounded-xl bg-white shadow-sm p-3">
       <MapContainer

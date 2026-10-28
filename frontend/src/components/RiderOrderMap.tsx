@@ -1,11 +1,8 @@
 import type { IOrder } from "../types";
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import * as L from "leaflet";
+import L from "../utils/leaflet-setup";
 import "leaflet/dist/leaflet.css";
-if (typeof window !== "undefined") {
-  (window as any).L = L;
-}
 import "leaflet-routing-machine";
 import axios from "axios";
 import { realtimeService } from "../main";
@@ -43,22 +40,43 @@ const Routing = ({
   const map = useMap();
 
   useEffect(() => {
-    const control = L.Routing.control({
-      waypoints: [L.latLng(from), L.latLng(to)],
-      lineOptions: {
-        styles: [{ color: "#E23744", weight: 5 }],
-      },
-      addWaypoints: false,
-      draggableWaypoints: false,
-      show: false,
-      createMarker: () => null,
-      router: L.Routing.osrmv1({
-        serviceUrl: "https://router.project-osrm.org/route/v1",
-      }),
-    }).addTo(map);
+    const RoutingMachine =
+      (L as any).Routing ||
+      (typeof window !== "undefined" && (window as any).L?.Routing) ||
+      (typeof globalThis !== "undefined" && (globalThis as any).L?.Routing);
+
+    if (!RoutingMachine || !RoutingMachine.control) {
+      console.warn("Leaflet Routing Machine is not ready yet.");
+      return;
+    }
+
+    let control: any;
+    try {
+      control = RoutingMachine.control({
+        waypoints: [L.latLng(from), L.latLng(to)],
+        lineOptions: {
+          styles: [{ color: "#E23744", weight: 5 }],
+        },
+        addWaypoints: false,
+        draggableWaypoints: false,
+        show: false,
+        createMarker: () => null,
+        router: RoutingMachine.osrmv1({
+          serviceUrl: "https://router.project-osrm.org/route/v1",
+        }),
+      }).addTo(map);
+    } catch (err) {
+      console.error("Failed to add routing control:", err);
+    }
 
     return () => {
-      map.removeControl(control);
+      if (control) {
+        try {
+          map.removeControl(control);
+        } catch {
+          // ignore cleanup errors
+        }
+      }
     };
   }, [from, to, map]);
 
@@ -71,6 +89,7 @@ const RiderOrderMap = ({ order }: Props) => {
   );
 
   if (
+    !order?.deliveryAddress ||
     order.deliveryAddress.latitude == null ||
     order.deliveryAddress.longitude == null
   ) {
@@ -83,7 +102,11 @@ const RiderOrderMap = ({ order }: Props) => {
   ];
 
   useEffect(() => {
+    if (!order?.userId) return;
+
     const fetchLocation = () => {
+      if (!navigator.geolocation) return;
+
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const latitude = pos.coords.latitude;
@@ -103,7 +126,7 @@ const RiderOrderMap = ({ order }: Props) => {
                 "x-internal-key": import.meta.env.VITE_INTERNAL_SERVICE_KEY,
               },
             }
-          );
+          ).catch((err) => console.log("Emit location error:", err));
         },
         (err) => console.log("Location Error:", err),
         {
@@ -118,7 +141,7 @@ const RiderOrderMap = ({ order }: Props) => {
     const interval = setInterval(fetchLocation, 10000);
 
     return () => clearInterval(interval);
-  }, [order.userId]);
+  }, [order?.userId]);
 
   if (!riderLocation) return null;
   return (

@@ -1,3 +1,5 @@
+import "./utils/leaflet-setup";
+import "leaflet-routing-machine";
 import { StrictMode } from "react"; //it exists only during development and helps to highlight potential problems in an application. It activates additional checks and warnings for its descendants.It disappears in production builds.
 import { createRoot } from "react-dom/client";
 import "./index.css";

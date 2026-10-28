@@ -10,6 +10,7 @@ import audio from "../assets/faaah.mp3";
 import RiderOrderRequest from "../components/RiderOrderRequest";
 import RiderCurrentOrder from "../components/RiderCurrentOrder";
 import RiderOrderMap from "../components/RiderOrderMap";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 interface IRider {
   _id: string;
@@ -111,9 +112,10 @@ const RiderDashboard = () => {
         }
       );
 
-      setCurrentOrder(data.order);
+      const resolvedOrder = data?.order !== undefined ? data.order : data;
+      setCurrentOrder(resolvedOrder || null);
     } catch (error) {
-      console.log(error);
+      console.log("fetchCurrentOrder error:", error);
       setCurrentOrder(null);
     }
   };
@@ -365,11 +367,15 @@ const RiderDashboard = () => {
 
       {currentOrder && (
         <div className="mx-auto max-w-md px-4 space-y-4">
-          <RiderCurrentOrder
-            order={currentOrder}
-            onStatusUpdate={fetchCurrentOrder}
-          />
-          <RiderOrderMap order={currentOrder} />
+          <ErrorBoundary>
+            <RiderCurrentOrder
+              order={currentOrder}
+              onStatusUpdate={fetchCurrentOrder}
+            />
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <RiderOrderMap order={currentOrder} />
+          </ErrorBoundary>
         </div>
       )}
     </div>
