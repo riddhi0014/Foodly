@@ -57,6 +57,37 @@ export const initSocket = (server: http.Server) => {
       }
     });
 
+    socket.on("join", (room: string) => {
+      if (room) {
+        socket.join(room);
+        console.log(`📡 Socket ${socket.id} joined room ${room}`);
+      }
+    });
+
+    socket.on("leave", (room: string) => {
+      if (room) {
+        socket.leave(room);
+        console.log(`👋 Socket ${socket.id} left room ${room}`);
+      }
+    });
+
+    socket.on(
+      "rider:location:send",
+      ({
+        room,
+        latitude,
+        longitude,
+      }: {
+        room: string;
+        latitude: number;
+        longitude: number;
+      }) => {
+        if (room && latitude != null && longitude != null) {
+          io.to(room).emit("rider:location", { latitude, longitude });
+        }
+      }
+    );
+
     console.log(`User connected: ${userId}`);
     console.log("Socket room: ", [...socket.rooms]);
 

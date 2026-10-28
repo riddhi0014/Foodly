@@ -6,6 +6,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 import axios from "axios";
 import { realtimeService } from "../main";
+import { useSocket } from "../context/SocketContext";
 
 declare module "leaflet" {
   namespace Routing {
@@ -84,6 +85,7 @@ const Routing = ({
 };
 
 const RiderOrderMap = ({ order }: Props) => {
+  const { socket } = useSocket();
   const [riderLocation, setRiderLocation] = useState<[number, number] | null>(
     null
   );
@@ -104,6 +106,11 @@ const RiderOrderMap = ({ order }: Props) => {
   useEffect(() => {
     if (!order?.userId) return;
 
+    const internalKey = (
+      import.meta.env.VITE_INTERNAL_SERVICE_KEY ||
+      "jdfienf12345@@@@##4$$$%%%jsadfjlajdf"
+    ).trim();
+
     const fetchLocation = () => {
       if (!navigator.geolocation) return;
 
@@ -114,6 +121,23 @@ const RiderOrderMap = ({ order }: Props) => {
 
           setRiderLocation([latitude, longitude]);
 
+          // Direct socket emit for real-time responsiveness
+          if (socket) {
+            socket.emit("rider:location:send", {
+              room: `user:${order.userId}`,
+              latitude,
+              longitude,
+            });
+            if (order._id) {
+              socket.emit("rider:location:send", {
+                room: `order:${order._id}`,
+                latitude,
+                longitude,
+              });
+            }
+          }
+
+          // HTTP fallback to internal emit
           axios.post(
             `${realtimeService}/api/v1/internal/emit`,
             {
@@ -123,10 +147,26 @@ const RiderOrderMap = ({ order }: Props) => {
             },
             {
               headers: {
-                "x-internal-key": import.meta.env.VITE_INTERNAL_SERVICE_KEY,
+                "x-internal-key": internalKey,
               },
             }
           ).catch((err) => console.log("Emit location error:", err));
+
+          if (order._id) {
+            axios.post(
+              `${realtimeService}/api/v1/internal/emit`,
+              {
+                event: "rider:location",
+                room: `order:${order._id}`,
+                payload: { latitude, longitude },
+              },
+              {
+                headers: {
+                  "x-internal-key": internalKey,
+                },
+              }
+            ).catch(() => {});
+          }
         },
         (err) => console.log("Location Error:", err),
         {
@@ -141,7 +181,7 @@ const RiderOrderMap = ({ order }: Props) => {
     const interval = setInterval(fetchLocation, 10000);
 
     return () => clearInterval(interval);
-  }, [order?.userId]);
+  }, [order?.userId, order?._id, socket]);
 
   if (!riderLocation) return null;
   return (

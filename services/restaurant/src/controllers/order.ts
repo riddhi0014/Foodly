@@ -424,11 +424,13 @@ export const assignRiderToOrder = TryCatch(async (req, res) => {
     { new: true }
   );
 
-  await emitRealtime("order:rider_assigned", `user:${order.userId}`, order);
+  const payloadOrder = orderUpdated || order;
+  await emitRealtime("order:rider_assigned", `user:${order.userId}`, payloadOrder);
+  await emitRealtime("order:rider_assigned", `order:${orderId}`, payloadOrder);
   await emitRealtime(
     "order:rider_assigned",
     `restaurant:${order.restaurantId}`,
-    order
+    payloadOrder
   );
 
   res.json({
@@ -496,6 +498,15 @@ export const updateOrderStatusRider = TryCatch(async (req, res) => {
     );
 
     await emitRealtime("order:rider_assigned", `user:${order.userId}`, order);
+    await emitRealtime("order:rider_assigned", `order:${order._id}`, order);
+    await emitRealtime("order:update", `user:${order.userId}`, {
+      orderId: order._id,
+      status: order.status,
+    });
+    await emitRealtime("order:update", `order:${order._id}`, {
+      orderId: order._id,
+      status: order.status,
+    });
 
     return res.json({
       message: "Order updated Successfully",
@@ -514,6 +525,15 @@ export const updateOrderStatusRider = TryCatch(async (req, res) => {
     );
 
     await emitRealtime("order:rider_assigned", `user:${order.userId}`, order);
+    await emitRealtime("order:rider_assigned", `order:${order._id}`, order);
+    await emitRealtime("order:update", `user:${order.userId}`, {
+      orderId: order._id,
+      status: order.status,
+    });
+    await emitRealtime("order:update", `order:${order._id}`, {
+      orderId: order._id,
+      status: order.status,
+    });
 
     return res.json({
       message: "Order updated Successfully",
